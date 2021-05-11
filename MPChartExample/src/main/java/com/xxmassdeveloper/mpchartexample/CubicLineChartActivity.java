@@ -111,8 +111,10 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
         seekBarX.setProgress(45);
         seekBarY.setProgress(100);
 
+        //显示每条线的描述
         chart.getLegend().setEnabled(false);
 
+        //动画，xy轴一起执行
         chart.animateXY(2000, 2000);
 
         // don't forget to refresh the drawing
@@ -121,8 +123,10 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
 
     private void setData(int count, float range) {
 
+        //声明一个数组
         ArrayList<Entry> values = new ArrayList<>();
 
+        //第一个进度条的数值（显示的数据数）
         for (int i = 0; i < count; i++) {
             float val = (float) (Math.random() * (range + 1)) + 20;
             values.add(new Entry(i, val));
@@ -145,14 +149,18 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
             set1.setDrawFilled(true);
             set1.setDrawCircles(false);
             set1.setLineWidth(1.8f);
-            set1.setCircleRadius(4f);
-            set1.setCircleColor(Color.WHITE);
-            set1.setHighLightColor(Color.rgb(244, 117, 117));
-            set1.setColor(Color.WHITE);
-            set1.setFillColor(Color.WHITE);
-            set1.setFillAlpha(100);
+            set1.setValueTextSize(8f);//当lineData不设置字体大小的话，这个生效
+            set1.setCircleRadius(8f); //折线中每一点的半径和颜色
+            set1.setCircleColor(Color.GREEN);
+
+            set1.setHighLightColor(Color.rgb(240, 141, 73));//高亮线的颜色
+
+            set1.setColor(Color.RED);       //设置线条颜色
+            set1.setFillColor(Color.YELLOW);    //设置填充颜色
+            set1.setFillAlpha(233);         //填充颜色的透明度
             set1.setDrawHorizontalHighlightIndicator(false);
-            set1.setFillFormatter(new IFillFormatter() {
+
+            set1.setFillFormatter(new IFillFormatter() {//用于控制填充线的位置以Y轴的最小值为准，而不再是默认的以0为准
                 @Override
                 public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
                     return chart.getAxisLeft().getAxisMinimum();
@@ -162,8 +170,9 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
             // create a data object with the data sets
             LineData data = new LineData(set1);
             data.setValueTypeface(tfLight);
-            data.setValueTextSize(9f);
-            data.setDrawValues(false);
+            //data.setValueTextSize(5f);     //设置其上各点数据字体大小（不包括x、y轴）
+
+            data.setDrawValues(true); //是否在点上绘制Value
 
             // set data
             chart.setData(data);
@@ -233,8 +242,8 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
                 break;
             }
             case R.id.actionToggleCubic: {
-                List<ILineDataSet> sets = chart.getData()
-                        .getDataSets();
+                //每个DataSet=new LineDataSet(list<Entry<key,value>>,"第一条线");
+                List<ILineDataSet> sets = chart.getData().getDataSets();
 
                 for (ILineDataSet iSet : sets) {
 
@@ -315,8 +324,8 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-        tvX.setText(String.valueOf(seekBarX.getProgress()));
-        tvY.setText(String.valueOf(seekBarY.getProgress()));
+        tvX.setText(String.valueOf(seekBarX.getProgress()));  //第一各进度条作用是 数据集合的数量
+        tvY.setText(String.valueOf(seekBarY.getProgress()));  //第二个进度条作用是 根据进度的值随机生成一个y键
 
         setData(seekBarX.getProgress(), seekBarY.getProgress());
 
