@@ -202,6 +202,8 @@ public class LineChartActivity1 extends DemoBase implements OnSeekBarChangeListe
             set1 = new LineDataSet(values, "DataSet 1");
 
             set1.setDrawIcons(false);
+            set1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+            set1.setCubicIntensity(0.2f);
 
             // draw dashed line
             set1.enableDashedLine(10f, 5f, 0f);

@@ -8,23 +8,30 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.core.content.ContextCompat;
+
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.DataSet;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IFillFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.renderer.MyX;
 import com.xxmassdeveloper.mpchartexample.notimportant.DemoBase;
 
 import java.util.ArrayList;
@@ -60,7 +67,7 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
         chart = findViewById(R.id.chart1);
 
         //设置流线在view中的偏移（默认值是有一定的偏移的）
-        chart.setViewPortOffsets(0, 0, 0, 0);
+        chart.setViewPortOffsets(30, 20, 0, 30);
 
         //设置背景色
         chart.setBackgroundColor(Color.rgb(34, 92, 110));
@@ -82,27 +89,40 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
         chart.setDrawGridBackground(false);
 
         //最大高亮距离（dp）,点击位置距离数据点的距离超过这个距离不会高亮，默认500dp
-        chart.setMaxHighlightDistance(800);
+        chart.setMaxHighlightDistance(20);
+
+        //chart.setXAxisRenderer(new MyX(chart.getViewPortHandler(),chart.getXAxis(),chart.getTransformer(null)));
+
 
         //获取x轴
         XAxis x = chart.getXAxis();
         //禁止x轴
-        x.setEnabled(false);
+        //x.setEnabled(false);
+        x.setPosition(XAxis.XAxisPosition.BOTTOM);
+
+
 
         YAxis y = chart.getAxisLeft();
+
+
         y.setTypeface(tfLight); //标签字体
-        y.setLabelCount(6, false);//标签的数量，值自动计算
-        y.setTextColor(Color.WHITE);
-        y.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
-        y.setDrawGridLines(false);//是否显示网格线
+        //y.setLabelCount(6, false);//标签的数量，值自动计算
+        y.setTextColor(Color.RED);
+        //y.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
+        y.setDrawGridLines(true);//是否显示网格线
         y.setAxisLineColor(Color.RED);  //y轴颜色
+        y.setDrawAxisLine(false);
+
+        //y.enableGridDashedLine(10f, 10f, 0f);
+        //y.setDrawZeroLine(true);
 
         //隐藏右侧轴
         chart.getAxisRight().setEnabled(false);
 
         // add data
         seekBarY.setOnSeekBarChangeListener(this);
-        seekBarX.setOnSeekBarChangeListener(this);
+
+
 
         // lower max, as cubic runs significantly slower than linear
         seekBarX.setMax(700);
@@ -119,7 +139,55 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
 
         // don't forget to refresh the drawing
         chart.invalidate();
+
+        seekBarX.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Log.d("TAG", "onProgressChanged: "+progress);
+
+                highlight=new Highlight(progress,0,0);
+
+                Log.d("TAG", "onProgressChanged: "+highlight);
+                Log.d("TAG", "onProgressChanged: "+chart);
+
+                chart.highlightValue(highlight, false);
+
+                Entry entry = chart.getLineData().getEntryForHighlight(highlight);
+
+               setText(entry);
+
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+
+        chart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
+
     }
+private void setText(Entry entry){
+    tvX.setText(entry.getX()+":"+entry.getY()+":"+entry.getData());
+
+}
 
     private void setData(int count, float range) {
 
@@ -144,8 +212,9 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
             // create a dataset and give it a type
             set1 = new LineDataSet(values, "DataSet 1");
 
-            set1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+            set1.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
             set1.setCubicIntensity(0.2f);
+
             set1.setDrawFilled(true);
             set1.setDrawCircles(false);
             set1.setLineWidth(1.8f);
@@ -155,10 +224,19 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
 
             set1.setHighLightColor(Color.rgb(240, 141, 73));//高亮线的颜色
 
+            set1.setHighlightLineWidth(3f);
+
             set1.setColor(Color.RED);       //设置线条颜色
-            set1.setFillColor(Color.YELLOW);    //设置填充颜色
+            set1.setFillDrawable(ContextCompat.getDrawable(this, R.drawable.fade_red));    //设置填充颜色
             set1.setFillAlpha(233);         //填充颜色的透明度
             set1.setDrawHorizontalHighlightIndicator(false);
+            set1.setHighlightEnabled(true);
+
+
+
+
+
+            //set1.setGradientColor(Color.RED, Color.BLUE);
 
             set1.setFillFormatter(new IFillFormatter() {//用于控制填充线的位置以Y轴的最小值为准，而不再是默认的以0为准
                 @Override
@@ -320,18 +398,23 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
         }
         return true;
     }
-
+    Highlight highlight;
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-        tvX.setText(String.valueOf(seekBarX.getProgress()));  //第一各进度条作用是 数据集合的数量
+        tvX.setText("45");  //第一各进度条作用是 数据集合的数量
         tvY.setText(String.valueOf(seekBarY.getProgress()));  //第二个进度条作用是 根据进度的值随机生成一个y键
 
-        setData(seekBarX.getProgress(), seekBarY.getProgress());
+
+        setData(45, seekBarY.getProgress());
 
         // redraw
         chart.invalidate();
+
+
     }
+
+
 
     @Override
     protected void saveToGallery() {
