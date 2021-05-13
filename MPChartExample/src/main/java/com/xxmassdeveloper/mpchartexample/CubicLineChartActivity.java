@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -30,6 +31,8 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.ChartTouchListener;
+import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.renderer.MyX;
 import com.xxmassdeveloper.mpchartexample.notimportant.DemoBase;
@@ -67,13 +70,14 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
         chart = findViewById(R.id.chart1);
 
         //设置流线在view中的偏移（默认值是有一定的偏移的）
-        chart.setViewPortOffsets(30, 20, 0, 30);
+        chart.setViewPortOffsets(30, 20, 30, 30);
 
         //设置背景色
         chart.setBackgroundColor(Color.rgb(34, 92, 110));
 
         //描述的文本
         chart.getDescription().setEnabled(false);
+        //chart.setHighlightPerTapEnabled(false);
 
         //触控手势
         chart.setTouchEnabled(true);
@@ -89,9 +93,77 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
         chart.setDrawGridBackground(false);
 
         //最大高亮距离（dp）,点击位置距离数据点的距离超过这个距离不会高亮，默认500dp
-        chart.setMaxHighlightDistance(20);
+        //chart.setMaxHighlightDistance(20);
 
-        //chart.setXAxisRenderer(new MyX(chart.getViewPortHandler(),chart.getXAxis(),chart.getTransformer(null)));
+
+        final MyX myX = new MyX(chart.getViewPortHandler(), chart.getXAxis(), chart.getTransformer(null), highlight);
+        chart.setXAxisRenderer(myX);
+
+        chart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+                Toast.makeText(CubicLineChartActivity.this,"点击了："+e.getX()+":"+e.getY(),Toast.LENGTH_SHORT).show();
+                Log.d("TAG", "onValueSelected: 点击率可");
+
+
+
+                myX.h=h;
+                chart.invalidate();
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
+
+        chart.setOnChartGestureListener(new OnChartGestureListener() {
+            @Override
+            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+
+            }
+
+            @Override
+            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+
+            }
+
+            @Override
+            public void onChartLongPressed(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartDoubleTapped(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartSingleTapped(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+
+            }
+
+            @Override
+            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+
+            }
+
+            @Override
+            public void onChartTranslate(MotionEvent me, float dX, float dY) {
+                Log.d("TAG", "onChartTranslate: 拖拽");
+
+
+
+                //myX.h1+=dX;
+
+                chart.invalidate();
+            }
+        });
 
 
         //获取x轴
@@ -99,7 +171,9 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
         //禁止x轴
         //x.setEnabled(false);
         x.setPosition(XAxis.XAxisPosition.BOTTOM);
+        x.setGranularity(1f);
 
+       x. setLabelCount(6, true);
 
 
         YAxis y = chart.getAxisLeft();
@@ -171,17 +245,6 @@ public class CubicLineChartActivity extends DemoBase implements OnSeekBarChangeL
         });
 
 
-        chart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            @Override
-            public void onValueSelected(Entry e, Highlight h) {
-
-            }
-
-            @Override
-            public void onNothingSelected() {
-
-            }
-        });
 
     }
 private void setText(Entry entry){
@@ -406,7 +469,7 @@ private void setText(Entry entry){
         tvY.setText(String.valueOf(seekBarY.getProgress()));  //第二个进度条作用是 根据进度的值随机生成一个y键
 
 
-        setData(45, seekBarY.getProgress());
+        setData(25, seekBarY.getProgress());
 
         // redraw
         chart.invalidate();
